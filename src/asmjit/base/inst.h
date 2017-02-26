@@ -72,6 +72,7 @@ struct Inst {
     // ------------------------------------------------------------------------
 
     ASMJIT_INLINE bool hasExtraReg() const noexcept { return extraReg.isValid(); }
+    ASMJIT_INLINE void resetExtraReg() noexcept { extraReg.reset(); }
 
     // ------------------------------------------------------------------------
     // [Members]

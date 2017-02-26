@@ -86,8 +86,9 @@ if(NOT ASMJIT_EMBED)
 endif()
 
 foreach(BUILD_OPTION
-    ASMJIT_BUILD_ARM
     ASMJIT_BUILD_X86
+    ASMJIT_BUILD_ARM
+    ASMJIT_BUILD_A64
     ASMJIT_DISABLE_BUILDER
     ASMJIT_DISABLE_COMPILER
     ASMJIT_DISABLE_TEXT
@@ -142,13 +143,13 @@ cxx_add_source(asmjit ASMJIT_SRC asmjit/base
   inst.h
   logging.cpp
   logging.h
-  misc_p.h
   operand.cpp
   operand.h
   osutils.cpp
   osutils.h
-  regalloc.cpp
-  regalloc_p.h
+  rabuilders_p.h
+  rapass.cpp
+  rapass_p.h
   runtime.cpp
   runtime.h
   simdtypes.h
@@ -162,17 +163,27 @@ cxx_add_source(asmjit ASMJIT_SRC asmjit/base
   zone.h
 )
 
-if(0)
 cxx_add_source(asmjit ASMJIT_SRC asmjit/arm
   armassembler.cpp
   armassembler.h
+  armbuilder.cpp
+  armbuilder.h
+  armcompiler.cpp
+  armcompiler.h
+  armemitter.h
+  armglobals.h
+  arminternal.cpp
+  arminternal_p.h
   arminst.cpp
   arminst.h
+  armlogging.cpp
+  armlogging_p.h
   armoperand.cpp
   armoperand_regs.cpp
   armoperand.h
+  armrapass.cpp
+  armrapass_p.h
 )
-endif()
 
 cxx_add_source(asmjit ASMJIT_SRC asmjit/x86
   x86assembler.cpp
@@ -191,12 +202,13 @@ cxx_add_source(asmjit ASMJIT_SRC asmjit/x86
   x86instimpl_p.h
   x86logging.cpp
   x86logging_p.h
-  x86misc.h
   x86operand.cpp
   x86operand_regs.cpp
   x86operand.h
-  x86regalloc.cpp
-  x86regalloc_p.h
+  x86rapass.cpp
+  x86rapass_p.h
+  x86ssetoavxpass.cpp
+  x86ssetoavxpass_p.h
 )
 
 # =============================================================================

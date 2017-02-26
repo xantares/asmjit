@@ -438,6 +438,51 @@ Error ZoneVectorBase::_resize(ZoneHeap* heap, size_t sizeOfT, size_t n) noexcept
 // [asmjit::ZoneBitVector - Ops]
 // ============================================================================
 
+Error ZoneBitVector::copyFrom(ZoneHeap* heap, const ZoneBitVector& other) noexcept {
+  BitWord* data = _data;
+  size_t newLength = other.getLength();
+
+  if (!newLength) {
+    _length = 0;
+    return kErrorOk;
+  }
+
+  if (newLength > _capacity) {
+    // Realloc needed... Calculate the minimum capacity (in bytes) requied.
+    size_t minimumCapacityInBits = Utils::alignTo<size_t>(newLength, kBitsPerWord);
+
+    if (ASMJIT_UNLIKELY(minimumCapacityInBits < newLength))
+      return DebugUtils::errored(kErrorNoHeapMemory);
+
+    // Normalize to bytes.
+    size_t minimumCapacity = minimumCapacityInBits / 8;
+    size_t allocatedCapacity;
+
+    BitWord* newData = static_cast<BitWord*>(heap->alloc(minimumCapacity, allocatedCapacity));
+    if (ASMJIT_UNLIKELY(!newData))
+      return DebugUtils::errored(kErrorNoHeapMemory);
+
+    // `allocatedCapacity` now contains number in bytes, we need bits.
+    size_t allocatedCapacityInBits = allocatedCapacity * 8;
+
+    // Arithmetic overflow should normally not happen. If it happens we just
+    // change the `allocatedCapacityInBits` to the `minimumCapacityInBits` as
+    // this value is still safe to be used to call `_heap->release(...)`.
+    if (ASMJIT_UNLIKELY(allocatedCapacityInBits < allocatedCapacity))
+      allocatedCapacityInBits = minimumCapacityInBits;
+
+    if (data)
+      heap->release(data, _capacity / 8);
+    data = newData;
+
+    _data = data;
+    _capacity = allocatedCapacityInBits;
+  }
+
+  _copyBits(data, other.getData(), _wordsPerBits(newLength));
+  return kErrorOk;
+}
+
 Error ZoneBitVector::_resize(ZoneHeap* heap, size_t newLength, size_t idealCapacity, bool newBitsValue) noexcept {
   ASMJIT_ASSERT(idealCapacity >= newLength);
 
@@ -464,15 +509,15 @@ Error ZoneBitVector::_resize(ZoneHeap* heap, size_t newLength, size_t idealCapac
   if (newLength > _capacity) {
     // Realloc needed... Calculate the minimum capacity (in bytes) requied.
     size_t minimumCapacityInBits = Utils::alignTo<size_t>(idealCapacity, kBitsPerWord);
-    size_t allocatedCapacity;
 
     if (ASMJIT_UNLIKELY(minimumCapacityInBits < newLength))
       return DebugUtils::errored(kErrorNoHeapMemory);
 
     // Normalize to bytes.
     size_t minimumCapacity = minimumCapacityInBits / 8;
-    BitWord* newData = static_cast<BitWord*>(heap->alloc(minimumCapacity, allocatedCapacity));
+    size_t allocatedCapacity;
 
+    BitWord* newData = static_cast<BitWord*>(heap->alloc(minimumCapacity, allocatedCapacity));
     if (ASMJIT_UNLIKELY(!newData))
       return DebugUtils::errored(kErrorNoHeapMemory);
 
@@ -485,8 +530,7 @@ Error ZoneBitVector::_resize(ZoneHeap* heap, size_t newLength, size_t idealCapac
     if (ASMJIT_UNLIKELY(allocatedCapacityInBits < allocatedCapacity))
       allocatedCapacityInBits = minimumCapacityInBits;
 
-    if (oldLength)
-      ::memcpy(newData, data, _wordsPerBits(oldLength));
+    _copyBits(newData, data, _wordsPerBits(oldLength));
 
     if (data)
       heap->release(data, _capacity / 8);

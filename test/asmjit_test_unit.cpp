@@ -223,7 +223,7 @@ static void dumpSizeOf(void) {
   DUMP_TYPE(CodeBuilder);
   DUMP_TYPE(CBNode);
   DUMP_TYPE(CBInst);
-  DUMP_TYPE(CBJump);
+  DUMP_TYPE(CBInstEx);
   DUMP_TYPE(CBData);
   DUMP_TYPE(CBAlign);
   DUMP_TYPE(CBLabel);

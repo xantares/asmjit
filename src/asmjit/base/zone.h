@@ -850,6 +850,11 @@ public:
     return static_cast<BitWord>(0) - bitAsWord;
   }
 
+  static ASMJIT_INLINE void _copyBits(BitWord* dst, const BitWord* src, size_t count) noexcept {
+    for (size_t i = 0; i < count; i++)
+      dst[i] = src[i];
+  }
+
   // --------------------------------------------------------------------------
   // [Construction / Destruction]
   // --------------------------------------------------------------------------
@@ -920,6 +925,8 @@ public:
     size_t bit = index % kBitsPerWord;
     _data[idx] ^= static_cast<BitWord>(1) << bit;
   }
+
+  ASMJIT_API Error copyFrom(ZoneHeap* heap, const ZoneBitVector& other) noexcept;
 
   ASMJIT_INLINE Error append(ZoneHeap* heap, bool value) noexcept {
     size_t index = _length;
