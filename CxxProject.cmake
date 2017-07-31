@@ -309,11 +309,9 @@ if (NOT __CXX_INCLUDED)
       target_compile_options(${target} PRIVATE ${cflags} $<$<CONFIG:Debug>:${cflags_dbg}> $<$<NOT:$<CONFIG:Debug>>:${cflags_rel}>)
     endif()
 
-    if(NOT ${PRODUCT}_STATIC)
-      install(TARGETS ${target} LIBRARY DESTINATION lib${LIB_SUFFIX}
-                                ARCHIVE DESTINATION lib${LIB_SUFFIX}
-                                RUNTIME DESTINATION bin)
-    endif()
+    install(TARGETS ${target} LIBRARY DESTINATION lib${LIB_SUFFIX}
+                              ARCHIVE DESTINATION lib${LIB_SUFFIX}
+                              RUNTIME DESTINATION bin)
   endfunction()
 
   function(cxx_add_executable product target src deps cflags cflags_dbg cflags_rel)
